@@ -3,20 +3,20 @@ local module = require("acommit.module")
 
 local M = {}
 M.config = {
-  -- default config
-  opt = "Hello!",
+  prompt =
+  "You are to act as the author of a commit message in git. Your mission is to create clean and comprehensive commit messages in the gitmoji convention with emoji and explain why a change was done. I'll send you an output of 'git diff --staged' command, and you convert it into a commit message. Add a short description of WHY the changes are done after the commit message. Don't start it with 'This commit', just describe the changes. Use the present tense. Commit title must not be longer than 74 characters.",
+  token = os.getenv("OPENAI_API_KEY")
 }
 
--- setup is the public method to setup your plugin
 M.setup = function(args)
-  -- you can define your setup function here. Usually configurations can be merged, accepting outside params and
-  -- you can also put some validation here for those.
   M.config = vim.tbl_deep_extend("force", M.config, args or {})
 end
 
--- "hello" is a public method for the plugin
-M.hello = function()
-  module.my_first_function()
+M.commit = function()
+  local diff = module.get_staged_diff()
+  local text = module.generate_text(diff, M.config.prompt, M.config.token)
+  local tmp_name = module.generate_commit_message_file(text)
+  vim.cmd("Git commit -t " .. tmp_name)
 end
 
 return M
