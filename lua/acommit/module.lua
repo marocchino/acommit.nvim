@@ -53,7 +53,7 @@ M.generate_text = function(payload_file, token)
 
   local curl_command = string.format(
     [[
-      curl -X POST -H "Content-Type: application/json" \
+      curl -s -X POST -H "Content-Type: application/json" \
       -H "Authorization: Bearer %s" \
       --data @%s \
       https://api.openai.com/v1/chat/completions
