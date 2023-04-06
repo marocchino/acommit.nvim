@@ -14,12 +14,9 @@ M.get_staged_diff = function()
   return diff_output
 end
 
-M.generate_text = function(diff, prompt, token)
+M.generate_payload_file = function(diff, prompt)
   if not prompt then
     error("No prompt found")
-  end
-  if not token then
-    error("No token found")
   end
   local payload = {
     model = "gpt-3.5-turbo",
@@ -35,7 +32,6 @@ M.generate_text = function(diff, prompt, token)
     },
   }
   TMP_MSG_FILENAME = os.tmpname()
-
   local f = io.open(TMP_MSG_FILENAME, "w+")
 
   if f == nil then
@@ -47,6 +43,14 @@ M.generate_text = function(diff, prompt, token)
   f:write(vim.json.encode(payload))
 
   f:close()
+  return TMP_MSG_FILENAME
+end
+
+M.generate_text = function(payload_file, token)
+  if not token then
+    error("No token found")
+  end
+
   local curl_command = string.format(
     [[
       curl -X POST -H "Content-Type: application/json" \
@@ -55,7 +59,7 @@ M.generate_text = function(diff, prompt, token)
       https://api.openai.com/v1/chat/completions
     ]],
     token,
-    TMP_MSG_FILENAME
+    payload_file
   )
 
   local result = io.popen(curl_command)

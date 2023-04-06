@@ -13,7 +13,8 @@ end
 
 M.commit = function()
   local diff = module.get_staged_diff()
-  local text = module.generate_text(diff, M.config.prompt, M.config.token)
+  local payload_file = module.generate_payload_file(diff, M.config.prompt)
+  local text = module.generate_text(payload_file, M.config.token)
   local tmp_name = module.generate_commit_message_file(text)
   vim.cmd("Git commit -t " .. tmp_name)
 end
