@@ -8,8 +8,7 @@ describe("get_staged_diff", function()
       read = function()
         return "diff --git a/README.md b/README.md"
       end,
-      close = function()
-      end,
+      close = function() end,
     })
 
     local diff = module.get_staged_diff()
@@ -29,8 +28,7 @@ describe("get_staged_diff", function()
       read = function()
         return ""
       end,
-      close = function()
-      end,
+      close = function() end,
     })
 
     assert.has_error(module.get_staged_diff, "No staged files found")
@@ -43,10 +41,8 @@ describe("build_payload_file", function()
   it("returns payload file", function()
     stub(io, "open")
     io.open.returns({
-      write = function()
-      end,
-      close = function()
-      end,
+      write = function() end,
+      close = function() end,
     })
 
     local payload_file = module.build_payload_file(diff, prompt)
@@ -81,8 +77,7 @@ describe("generate_text", function()
       read = function()
         return response
       end,
-      close = function()
-      end,
+      close = function() end,
     })
 
     local generated_text = module.generate_text(payload_file, token)
@@ -107,8 +102,7 @@ describe("generate_text", function()
       read = function()
         return ""
       end,
-      close = function()
-      end,
+      close = function() end,
     })
 
     assert.has_error(function()
@@ -124,8 +118,7 @@ describe("generate_text", function()
           {"error":"invalid API key"}
         ]]
       end,
-      close = function()
-      end,
+      close = function() end,
     })
 
     assert.has_error(function()
@@ -140,10 +133,8 @@ describe("build_commit_file", function()
   it("returns commit file", function()
     stub(io, "open")
     io.open.returns({
-      write = function()
-      end,
-      close = function()
-      end,
+      write = function() end,
+      close = function() end,
     })
 
     local commit_file = module.build_commit_file(message)
