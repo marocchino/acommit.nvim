@@ -67,6 +67,9 @@ M.generate_text = function(payload_filename, token)
   local result_body = result:read("*all")
   result:close()
 
+  if result_body == "" then
+    error("No response from OpenAI API")
+  end
   local json = vim.json.decode(result_body)
   if not json.choices then
     error("No choices found in response")
