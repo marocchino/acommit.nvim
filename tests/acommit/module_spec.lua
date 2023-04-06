@@ -133,3 +133,28 @@ describe("generate_text", function()
     end, "No choices found in response")
   end)
 end)
+
+describe("build_commit_file", function()
+  local message = "message"
+
+  it("returns commit file", function()
+    stub(io, "open")
+    io.open.returns({
+      write = function()
+      end,
+      close = function()
+      end,
+    })
+
+    local commit_file = module.build_commit_file(message)
+    assert.is_not_nil(commit_file)
+  end)
+
+  it("raise error when open failed", function()
+    stub(io, "open")
+    io.open.returns(nil)
+    assert.has_error(function()
+      module.build_commit_file(message)
+    end)
+  end)
+end)
