@@ -35,9 +35,7 @@ M.build_payload_file = function(diff, prompt)
   local f = io.open(TMP_MSG_FILENAME, "w+")
 
   if f == nil then
-    vim.notify("Cannot open temporary message file: " .. TMP_MSG_FILENAME, vim.log.levels.ERROR)
-
-    return
+    error("Cannot open temporary message file: " .. TMP_MSG_FILENAME)
   end
 
   f:write(vim.json.encode(payload))
@@ -83,9 +81,7 @@ M.build_commit_file = function(message)
   TMP_COMMIT_FILENAME = os.tmpname()
   local f = io.open(TMP_COMMIT_FILENAME, "w+")
   if f == nil then
-    vim.notify("Cannot open temporary commit file: " .. TMP_COMMIT_FILENAME, vim.log.levels.ERROR)
-
-    return
+    error("Cannot open temporary commit file: " .. TMP_COMMIT_FILENAME)
   end
   f:write(message)
   f:close()
