@@ -31,8 +31,8 @@ M.generate_text = function(diff, prompt, token)
       {
         role = "user",
         content = diff,
-      }
-    }
+      },
+    },
   }
   TMP_MSG_FILENAME = os.tmpname()
 
@@ -47,16 +47,19 @@ M.generate_text = function(diff, prompt, token)
   f:write(vim.json.encode(payload))
 
   f:close()
-  local curl_command = string.format([[
-  curl -X POST -H "Content-Type: application/json" \
-  -H "Authorization: Bearer %s" \
-  --data @%s \
-  https://api.openai.com/v1/chat/completions
-  ]], token, TMP_MSG_FILENAME)
+  local curl_command = string.format(
+    [[
+      curl -X POST -H "Content-Type: application/json" \
+      -H "Authorization: Bearer %s" \
+      --data @%s \
+      https://api.openai.com/v1/chat/completions
+    ]],
+    token,
+    TMP_MSG_FILENAME
+  )
 
   local result = io.popen(curl_command)
   local result_body = result:read("*all")
-  -- {"id":"chatcmpl-72C05dX6r95hCJahUYZnnpDreb8Ow","object":"chat.completion","created":1680757141,"model":"gpt-3.5-turbo-0301","usage":{"prompt_tokens":1196,"completion_tokens":83,"total_tokens":1279},"choices":[{"message":{"role":"assistant","content":"📝 Added 'commit' method in module.lua and updated the plugin to use it as a command\n\nThe 'commit' method now generates a commit message which includes the 'prompt' and the differences between the repository and the staged content. It then sends the commit message to OpenAI's GPT-3 to generate a full commit message. The plugin has been updated to use the 'commit' method."},"finish_reason":"stop","index":0}]}
   result:close()
 
   local json = vim.json.decode(result_body)
@@ -74,7 +77,6 @@ M.generate_commit_message_file = function(message)
   local f = io.open(TMP_COMMIT_FILENAME, "w+")
   if f == nil then
     vim.notify("Cannot open temporary commit file: " .. TMP_COMMIT_FILENAME, vim.log.levels.ERROR)
-
 
     return
   end

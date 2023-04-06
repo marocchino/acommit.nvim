@@ -5,9 +5,10 @@ describe("get_staged_diff", function()
   it("returns staged diff", function()
     stub(io, "popen")
     io.popen.returns({
-      read = function() return "diff --git a/README.md b/README.md" end,
-      close = function()
-      end
+      read = function()
+        return "diff --git a/README.md b/README.md"
+      end,
+      close = function() end,
     })
 
     local diff = module.get_staged_diff()
@@ -24,14 +25,15 @@ describe("get_staged_diff", function()
   it("raise error when no staged files found", function()
     stub(io, "popen")
     io.popen.returns({
-      read = function() return "" end,
-      close = function()
-      end
+      read = function()
+        return ""
+      end,
+      close = function() end,
     })
 
     assert.has_error(module.get_staged_diff, "No staged files found")
   end)
 end)
 
-describe("get_staged_files", function()
-end)
+describe("get_staged_files", function() end)
+describe("get_staged_files", function() end)
