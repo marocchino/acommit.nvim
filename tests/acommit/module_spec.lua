@@ -35,5 +35,31 @@ describe("get_staged_diff", function()
   end)
 end)
 
-describe("get_staged_files", function() end)
-describe("get_staged_files", function() end)
+describe("build_payload_file", function()
+  local diff = "diff --git a/README.md b/README.md"
+  local prompt = "example prompt"
+  it("returns payload file", function()
+    stub(io, "open")
+    io.open.returns({
+      write = function() end,
+      close = function() end,
+    })
+
+    local payload_file = module.build_payload_file(diff, prompt)
+    assert.is_not_nil(payload_file)
+  end)
+
+  it("raise error when prompt is nil", function()
+    assert.has_error(function()
+      module.build_payload_file(diff, nil)
+    end, "No prompt found")
+  end)
+
+  it("raise error when open failed", function()
+    stub(io, "open")
+    io.open.returns(nil)
+    assert.has_error(function()
+      module.build_payload_file(diff, prompt)
+    end)
+  end)
+end)
