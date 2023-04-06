@@ -4,10 +4,13 @@ local M = {}
 M.get_staged_diff = function()
   local handle = io.popen("git diff --cached")
   if not handle then
-    error("No diff found")
+    error("Cannot open git diff command")
   end
   local diff_output = handle:read("*a")
   handle:close()
+  if diff_output == "" then
+    error("No staged files found")
+  end
   return diff_output
 end
 
