@@ -14,7 +14,7 @@ M.get_staged_diff = function()
   return diff_output
 end
 
-M.generate_payload_file = function(diff, prompt)
+M.build_payload_file = function(diff, prompt)
   if not prompt then
     error("No prompt found")
   end
@@ -46,7 +46,7 @@ M.generate_payload_file = function(diff, prompt)
   return TMP_MSG_FILENAME
 end
 
-M.generate_text = function(payload_file, token)
+M.generate_text = function(payload_filename, token)
   if not token then
     error("No token found")
   end
@@ -59,10 +59,13 @@ M.generate_text = function(payload_file, token)
       https://api.openai.com/v1/chat/completions
     ]],
     token,
-    payload_file
+    payload_filename
   )
 
   local result = io.popen(curl_command)
+  if not result then
+    error("Cannot open curl command")
+  end
   local result_body = result:read("*all")
   result:close()
 
@@ -76,7 +79,7 @@ M.generate_text = function(payload_file, token)
   return message
 end
 
-M.generate_commit_message_file = function(message)
+M.build_commit_file = function(message)
   TMP_COMMIT_FILENAME = os.tmpname()
   local f = io.open(TMP_COMMIT_FILENAME, "w+")
   if f == nil then
