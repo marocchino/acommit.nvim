@@ -1,5 +1,6 @@
 -- module represents a lua module for the plugin
 local M = {}
+local curl = require("plenary.curl")
 
 M.get_staged_diff = function()
   local handle = io.popen("git diff --cached")
@@ -49,23 +50,19 @@ M.generate_text = function(payload_filename, token)
     error("No token found")
   end
 
-  local curl_command = string.format(
-    [[
-      curl -s -X POST -H "Content-Type: application/json" \
-      -H "Authorization: Bearer %s" \
-      --data @%s \
-      https://api.openai.com/v1/chat/completions
-    ]],
-    token,
-    payload_filename
-  )
+  local result = curl.post({
+    url = "https://api.openai.com/v1/chat/completions",
+    body = payload_filename,
+    headers = {
+      authorization = "Bearer " .. token,
+      content_type = "application/json",
+    },
+  })
 
-  local result = io.popen(curl_command)
-  if not result then
+  if not result or not result.body then
     error("Cannot open curl command")
   end
-  local result_body = result:read("*all")
-  result:close()
+  local result_body = result.body
 
   if result_body == "" then
     error("No response from OpenAI API")

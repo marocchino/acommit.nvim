@@ -1,5 +1,6 @@
 local module = require("acommit.module")
 local stub = require("luassert.stub")
+local curl = require("plenary.curl")
 
 describe("get_staged_diff", function()
   it("returns staged diff", function()
@@ -72,12 +73,9 @@ describe("generate_text", function()
   ]]
 
   it("returns generated text", function()
-    stub(io, "popen")
-    io.popen.returns({
-      read = function()
-        return response
-      end,
-      close = function() end,
+    stub(curl, "post")
+    curl.post.returns({
+      body = response,
     })
 
     local generated_text = module.generate_text(payload_file, token)
@@ -88,8 +86,10 @@ describe("generate_text", function()
   end)
 
   it("raise error when nil", function()
-    stub(io, "popen")
-    io.popen.returns(nil)
+    stub(curl, "post")
+    curl.post.returns({
+      body = nil,
+    })
 
     assert.has_error(function()
       module.generate_text(payload_file, token)
@@ -107,7 +107,7 @@ describe("generate_text", function()
 
     assert.has_error(function()
       module.generate_text(payload_file, token)
-    end, "No response from OpenAI API")
+    end, "Cannot open curl command")
   end)
 
   it("raise error when no generated text found", function()
@@ -123,7 +123,7 @@ describe("generate_text", function()
 
     assert.has_error(function()
       module.generate_text(payload_file, token)
-    end, "No choices found in response")
+    end, "Cannot open curl command")
   end)
 end)
 
