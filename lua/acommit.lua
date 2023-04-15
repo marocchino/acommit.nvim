@@ -14,9 +14,11 @@ end
 M.commit = function()
   local diff = module.get_staged_diff()
   local payload_filename = module.build_payload_file(diff, M.config.prompt)
-  local text = module.generate_text(payload_filename, M.config.token)
-  local tmp_filename = module.build_commit_file(text)
-  vim.cmd("Git commit -t " .. tmp_filename)
+  module.generate_text(payload_filename, M.config.token, function(text)
+    local tmp_filename = module.build_commit_file(text)
+    -- vim.api.nvim_cmd({ "Git", "commit", "-t", tmp_filename }, { output = false })
+    vim.cmd("Git commit -t " .. tmp_filename)
+  end)
 end
 
 return M

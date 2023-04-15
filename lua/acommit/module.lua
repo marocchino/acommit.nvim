@@ -1,6 +1,6 @@
 -- module represents a lua module for the plugin
 local M = {}
-local curl = require("plenary.curl")
+local job = require("plenary.job")
 
 M.get_staged_diff = function()
   local handle = io.popen("git diff --cached")
@@ -45,36 +45,44 @@ M.build_payload_file = function(diff, prompt)
   return TMP_MSG_FILENAME
 end
 
-M.generate_text = function(payload_filename, token)
+M.generate_text = function(payload_filename, token, callback)
   if not token then
     error("No token found")
   end
 
-  local result = curl.post({
-    url = "https://api.openai.com/v1/chat/completions",
-    body = payload_filename,
-    headers = {
-      authorization = "Bearer " .. token,
-      content_type = "application/json",
-    },
-  })
+  job
+    :new({
+      command = "curl",
+      args = {
+        "--silent",
+        "-X",
+        "POST",
+        "-H",
+        "Content-Type: application/json",
+        "-H",
+        "Authorization: Bearer " .. token,
+        "--data",
+        "@" .. payload_filename,
+        "https://api.openai.com/v1/chat/completions",
+      },
+      on_exit = function(result, code)
+        vim.schedule(function()
+          if code ~= 0 then
+            print("Error: curl failed. Error code: " .. return_code)
+            return
+          end
 
-  if not result or not result.body then
-    error("Cannot open curl command")
-  end
-  local result_body = result.body
-
-  if result_body == "" then
-    error("No response from OpenAI API")
-  end
-  local json = vim.json.decode(result_body)
-  if not json.choices then
-    error("No choices found in response")
-  end
-
-  local message = json.choices[1].message.content
-
-  return message
+          local result_body = table.concat(result:result(), "\n")
+          local json = vim.json.decode(result_body)
+          if not json.choices then
+            error("No choices found in response")
+          end
+          local text = json.choices[1].message.content
+          callback(text)
+        end)
+      end,
+    })
+    :start()
 end
 
 M.build_commit_file = function(message)
