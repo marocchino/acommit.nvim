@@ -45,6 +45,20 @@ M.build_payload_file = function(diff, prompt)
   return TMP_MSG_FILENAME
 end
 
+M.parse_response = function(response, code, callback)
+  if code ~= 0 then
+    error("Error: curl failed. Error code: " .. code)
+  end
+
+  local result_body = table.concat(response:result(), "\n")
+  local json = vim.json.decode(result_body)
+  if not json.choices then
+    error("No choices found in response")
+  end
+  local text = json.choices[1].message.content
+  callback(text)
+end
+
 M.generate_text = function(payload_filename, token, callback)
   if not token then
     error("No token found")
@@ -67,18 +81,7 @@ M.generate_text = function(payload_filename, token, callback)
       },
       on_exit = function(result, code)
         vim.schedule(function()
-          if code ~= 0 then
-            print("Error: curl failed. Error code: " .. return_code)
-            return
-          end
-
-          local result_body = table.concat(result:result(), "\n")
-          local json = vim.json.decode(result_body)
-          if not json.choices then
-            error("No choices found in response")
-          end
-          local text = json.choices[1].message.content
-          callback(text)
+          M.parse_response(result, code, callback)
         end)
       end,
     })

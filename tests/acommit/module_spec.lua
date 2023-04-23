@@ -1,5 +1,6 @@
 local module = require("acommit.module")
 local stub = require("luassert.stub")
+local job = require("plenary.job")
 
 describe("get_staged_diff", function()
   it("returns staged diff", function()
@@ -64,20 +65,64 @@ describe("build_payload_file", function()
   end)
 end)
 
-describe("generate_text", function()
-  local payload_file = "payload_file"
-  local token = "token"
-  local response = [[
+describe("parse_response", function()
+  local response = {
+    result = function()
+      return {
+        [[
     {"id":"chatcmpl-72NosIXohW3hJekjKtXKJuyYgHxjI","object":"chat.completion","created":1680802574,"model":"gpt-3.5-turbo-0301","usage":{"prompt_tokens":322,"completion_tokens":54,"total_tokens":376},"choices":[{"message":{"role":"assistant","content":"🚀 Add test case for 'generate_text' function\n\nStub `io.popen` and test that `module.generate_text` returns the correct generated text from `io.popen`. \nThis is done to ensure that `generate_text` function works as intended."},"finish_reason":"stop","index":0}]}
-  ]]
+  ]],
+      }
+    end,
+  }
+  local code = 0
 
-  pending("returns generated text", function()
+  it("returns parsed response", function()
     local callback = function(text)
-      assert.are.equal("🚀 Add test case for 'generate_text' function", text)
+      assert.are.equal(
+        "🚀 Add test case for 'generate_text' function\n\nStub `io.popen` and test that `module.generate_text` returns the correct generated text from `io.popen`. \nThis is done to ensure that `generate_text` function works as intended.",
+        text
+      )
     end
-    module.generate_text(payload_file, token, callback)
+    module.parse_response(response, code, callback)
+  end)
+
+  it("raise error when non 0 error code", function()
+    local code = 1
+
+    local callback = function(_)
+      error("Callback should not be called")
+    end
+
+    assert.has_error(function()
+      module.parse_response(response, code, callback)
+    end, "Error: curl failed. Error code: 1")
+  end)
+
+  it("handles missing choices in response", function()
+    local response = {
+      result = function()
+        return {
+          '{"no_choices": [{"message": {"content": "Hello, World!"}}]}',
+        }
+      end,
+    }
+
+    local code = 0
+
+    local callback = function(_)
+      error("Callback should not be called")
+    end
+
+    assert.has_error(function()
+      module.parse_response(response, code, callback)
+    end, "No choices found in response")
   end)
 end)
+-- describe("generate_text", function()
+--   pending("returns generated text", function()
+--   end)
+-- end)
 
 describe("build_commit_file", function()
   local message = "message"
